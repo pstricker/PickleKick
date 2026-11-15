@@ -9,21 +9,22 @@ export const GOALS_TO_PASS = 3;
  * up to about level 9, where it stays tough but beatable.
  *
  * The pickle numbers were tuned by simulating shots at every part of the goal. A
- * straight, well-struck shot scores into roughly 58% of the goal on level 1, 40% on
- * level 3, 25% on level 6 and 5% from level 10. Curving shots stay much better
- * (about 80% falling to 40%), so learning to bend the ball is what beats later levels.
+ * straight, well-struck shot scores into roughly 47% of the goal on level 1, 35% on
+ * level 3, 19% on level 6 and 5% from level 10. Curving shots stay much better
+ * (about 80% falling to 23%), and a hard curving shot still finds about 45% at the
+ * top levels, so bending the ball with good power is what beats later levels.
  */
 export function getLevel(n) {
   const i = Math.max(1, Math.floor(n)) - 1;
   return {
     n: i + 1,
-    react: Math.max(0.27, 0.36 - 0.012 * i),      // seconds before the pickle moves
-    diveSpeed: Math.min(4.2, 3.0 + 0.17 * i),     // metres per second
-    readTime: Math.max(0.3, 0.5 - 0.025 * i),     // seconds a curving shot fools the pickle
+    react: Math.max(0.27, 0.33 - 0.01 * i),       // seconds before the pickle moves
+    diveSpeed: Math.min(4.2, 3.4 + 0.14 * i),     // metres per second
+    readTime: Math.max(0.24, 0.3 - 0.01 * i),     // seconds a curving shot fools the pickle
     sway: Math.min(1.0, 0.35 + 0.08 * i),         // how far it shuffles side to side
     wall: i < 1 ? 0 : Math.min(5, 2 + Math.floor(i / 2)), // gherkin defenders, from level 2
     wallHop: i >= 4,
-    meterSpeed: Math.min(1.8, 1.0 + 0.08 * i),    // power meter sweeps per second
+    meterSpeed: Math.min(1.9, 1.15 + 0.08 * i),   // power meter sweeps per second
     distMin: Math.min(16, 13 + 0.3 * i),
     distMax: Math.min(19, 14.5 + 0.5 * i),
     angleMax: Math.min(0.4, 0.08 + 0.05 * i),     // radians off centre

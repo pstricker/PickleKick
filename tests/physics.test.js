@@ -127,13 +127,13 @@ test('levels never get easier, and level 10 is clearly harder than level 1', () 
   }
   const one = getLevel(1), ten = getLevel(10);
   assert.deepEqual([1, 2, 3, 5, 7].map((n) => getLevel(n).wall), [0, 2, 3, 4, 5]);
-  assert.ok(ten.diveSpeed >= one.diveSpeed * 1.3 && ten.react <= one.react * 0.8 && ten.wallHop && !one.wallHop);
+  assert.ok(ten.diveSpeed >= one.diveSpeed * 1.2 && ten.react <= one.react * 0.85 && ten.wallHop && !one.wallHop);
 });
 
 test('the pickle is beatable at every level: it cannot react instantly or outrun a hard shot', () => {
   for (const n of [1, 5, 10, 30]) {
     const level = getLevel(n);
-    assert.ok(level.react >= 0.27 && level.diveSpeed <= 4.2 && level.readTime >= 0.3);
+    assert.ok(level.react >= 0.27 && level.diveSpeed <= 4.2 && level.readTime >= 0.24);
     assert.ok(level.distMax <= 19, 'kicks never get so far out that the pickle has all day');
   }
 });

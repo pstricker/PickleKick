@@ -1,9 +1,8 @@
-// The stadium: sky, sun, clouds, striped pitch, goal with a net, stands and a
-// bouncing crowd. Everything is drawn in code, so there are no image files.
+// The stadium: sky, sun, clouds, striped pitch and the goal with its net.
+// The stands and the crowd of pickles are in crowd.js.
 import * as THREE from 'three';
 import { GOAL } from './physics.js';
-
-const CROWD_COLORS = [0xff5fa2, 0xffd93b, 0x3aa0ff, 0xff8a1f, 0x9b6bff, 0x5fd13d, 0xffffff, 0xff4d4d, 0x2fe0d0];
+import { buildCrowd } from './crowd.js';
 
 function canvasTexture(w, h, draw) {
   const c = document.createElement('canvas');
@@ -125,41 +124,6 @@ function buildGoal(scene) {
   return { back };
 }
 
-function buildCrowd(scene) {
-  const seats = [];
-  const standMat = [new THREE.MeshLambertMaterial({ color: 0x6a4bd6 }), new THREE.MeshLambertMaterial({ color: 0x8466ee })];
-  const addStep = (w, d, x, y, z, rotY, i) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.9, d), standMat[i % 2]);
-    m.position.set(x, y, z);
-    m.rotation.y = rotY;
-    scene.add(m);
-  };
-  const ROWS = 6;
-  for (let r = 0; r < ROWS; r++) {
-    const y = 0.45 + r * 0.9;
-    // behind the goal
-    addStep(64, 1.4, 0, y, -13.5 - r * 1.4, 0, r);
-    for (let x = -30; x <= 30; x += 1.15) seats.push({ x: x + (r % 2) * 0.5, y: y + 0.85, z: -13.5 - r * 1.4 });
-    // down both sides
-    for (const side of [-1, 1]) {
-      addStep(1.4, 46, side * (34 + r * 1.4), y, 10, 0, r);
-      for (let z = -11; z <= 31; z += 1.25) seats.push({ x: side * (34 + r * 1.4), y: y + 0.85, z: z + (r % 2) * 0.5 });
-    }
-  }
-  const geo = new THREE.SphereGeometry(0.46, 10, 8);
-  const mesh = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ color: 0xffffff }), seats.length);
-  const color = new THREE.Color();
-  seats.forEach((s, i) => {
-    s.phase = Math.random() * Math.PI * 2;
-    s.speed = 3 + Math.random() * 3;
-    mesh.setColorAt(i, color.setHex(CROWD_COLORS[(Math.random() * CROWD_COLORS.length) | 0]));
-  });
-  mesh.instanceColor.needsUpdate = true;
-  mesh.frustumCulled = false;
-  scene.add(mesh);
-  return { mesh, seats, dummy: new THREE.Object3D() };
-}
-
 function buildClouds(scene) {
   const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const clouds = [];
@@ -225,16 +189,7 @@ export function createStadium(scene, renderer) {
     rippleNet() { ripple = 1; },
     update(time, dt) {
       excitement = Math.max(0, excitement - dt * 0.35);
-      const amp = 0.07 + excitement * 0.55;
-      const { mesh, seats, dummy } = crowd;
-      for (let i = 0; i < seats.length; i++) {
-        const s = seats[i];
-        dummy.position.set(s.x, s.y + Math.abs(Math.sin(time * s.speed * (1 + excitement) + s.phase)) * amp, s.z);
-        dummy.scale.set(1, 1.2, 1);
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
-      }
-      mesh.instanceMatrix.needsUpdate = true;
+      crowd.update(time, excitement);
 
       for (const c of clouds) {
         c.position.x += c.userData.speed * dt;

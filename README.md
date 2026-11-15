@@ -2,7 +2,7 @@
 
 A silly first-person free-kick game. Can you score on the big dill?
 
-**Play it:** https://pstricker.github.io/PickleKick/
+**Play it:** https://philstricker.com/PickleKick/
 
 ## How to play
 

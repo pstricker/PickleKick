@@ -119,16 +119,23 @@ test('a weak shot still gets there, slowly', () => {
   assert.ok(soft && hard && soft.t > hard.t * 1.5);
 });
 
-test('levels never get easier, and level 10 is much harder than level 1', () => {
+test('levels never get easier, and level 10 is clearly harder than level 1', () => {
   for (let n = 1; n < 20; n++) {
     const a = getLevel(n), b = getLevel(n + 1);
     assert.ok(b.react <= a.react && b.diveSpeed >= a.diveSpeed && b.readTime <= a.readTime);
     assert.ok(b.wall >= a.wall && b.distMax >= a.distMax && b.meterSpeed >= a.meterSpeed);
   }
   const one = getLevel(1), ten = getLevel(10);
-  assert.equal(one.wall, 0);
-  assert.equal(getLevel(3).wall, 3);
-  assert.ok(ten.diveSpeed > one.diveSpeed * 1.5 && ten.react < one.react * 0.6 && ten.wallHop && !one.wallHop);
+  assert.deepEqual([1, 2, 3, 5, 7].map((n) => getLevel(n).wall), [0, 2, 3, 4, 5]);
+  assert.ok(ten.diveSpeed >= one.diveSpeed * 1.3 && ten.react <= one.react * 0.8 && ten.wallHop && !one.wallHop);
+});
+
+test('the pickle is beatable at every level: it cannot react instantly or outrun a hard shot', () => {
+  for (const n of [1, 5, 10, 30]) {
+    const level = getLevel(n);
+    assert.ok(level.react >= 0.27 && level.diveSpeed <= 4.2 && level.readTime >= 0.3);
+    assert.ok(level.distMax <= 19, 'kicks never get so far out that the pickle has all day');
+  }
 });
 
 test('kick spots stay in range and in front of the goal', () => {

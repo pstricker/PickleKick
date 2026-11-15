@@ -1,0 +1,11 @@
+{
+  "name": "picklekick",
+  "version": "1.0.0",
+  "description": "A silly first-person free-kick game with a pickle goalie.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 5173",
+    "test": "node --test"
+  }
+}

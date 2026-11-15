@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>PickleKick</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥒</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="ui">
+    <!-- In-game HUD -->
+    <div id="topbar" class="hidden">
+      <div class="pill pill-blue">LEVEL <b id="level-num">1</b></div>
+      <div id="kick-dots" aria-label="Kicks this level"></div>
+      <div class="pill pill-yellow">⭐ <b id="score">0</b></div>
+    </div>
+
+    <div id="steps" class="hidden">
+      <span data-step="aim">🎯 AIM</span>
+      <span data-step="spin">🌀 SPIN</span>
+      <span data-step="power">💪 POWER</span>
+    </div>
+
+    <div id="hint" class="hidden"></div>
+
+    <div id="spin-panel" class="hidden">
+      <div id="spin-pad">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="#fff" stroke="#1d2460" stroke-width="4"/>
+          <polygon points="50,33 66,45 60,64 40,64 34,45" fill="#1d2460"/>
+          <g stroke="#1d2460" stroke-width="3" fill="none" stroke-linecap="round">
+            <line x1="50" y1="33" x2="50" y2="12"/>
+            <line x1="66" y1="45" x2="86" y2="38"/>
+            <line x1="60" y1="64" x2="73" y2="82"/>
+            <line x1="40" y1="64" x2="27" y2="82"/>
+            <line x1="34" y1="45" x2="14" y2="38"/>
+          </g>
+          <g fill="#1d2460">
+            <polygon points="50,2 62,6 50,12 38,6"/>
+            <polygon points="96,34 97,48 86,38 90,27"/>
+            <polygon points="80,90 68,96 73,82 86,80"/>
+            <polygon points="20,90 32,96 27,82 14,80"/>
+            <polygon points="4,34 3,48 14,38 10,27"/>
+          </g>
+        </svg>
+        <div id="spin-dot">👟</div>
+      </div>
+    </div>
+
+    <div id="power-panel" class="hidden">
+      <div id="power-meter">
+        <div id="power-sweet"><span>PERFECT</span></div>
+        <div id="power-marker">⚽</div>
+      </div>
+    </div>
+
+    <div id="banner"></div>
+    <div id="tags"></div>
+    <div id="speech" class="hidden"></div>
+    <div id="confetti"></div>
+
+    <button id="mute-btn" class="round-btn" aria-label="Sound on or off">🔊</button>
+
+    <!-- Title screen -->
+    <section id="screen-title" class="screen">
+      <h1 class="logo"><span class="logo-pickle">Pickle</span><span class="logo-kick">Kick!</span></h1>
+      <p class="tagline">Can you score on the big dill? 🥒⚽</p>
+      <button id="play-btn" class="big-btn">▶ PLAY</button>
+      <button id="how-btn" class="small-btn">❓ How to play</button>
+      <p id="best-line" class="best-line"></p>
+    </section>
+
+    <!-- How to play -->
+    <section id="screen-how" class="screen hidden">
+      <h2 class="title">How to play</h2>
+      <div class="cards">
+        <div class="card card-1"><div class="card-icon">🎯</div><h3>1. AIM</h3><p>Slide the target where you want the ball to go. Tap to lock it!</p></div>
+        <div class="card card-2"><div class="card-icon">🌀</div><h3>2. SPIN</h3><p>Tap the side of the ball to make it curve. Watch the rainbow line!</p></div>
+        <div class="card card-3"><div class="card-icon">💪</div><h3>3. POWER</h3><p>Tap to stop the meter. Green is perfect. Red goes wild!</p></div>
+      </div>
+      <p class="tagline">Score 3 out of 5 to beat the level!</p>
+      <button id="how-play-btn" class="big-btn">▶ LET'S GO!</button>
+    </section>
+
+    <!-- Level result -->
+    <section id="screen-level" class="screen hidden">
+      <h2 class="title" id="level-title">Level complete!</h2>
+      <div id="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <p class="tagline" id="level-text"></p>
+      <p class="score-line">Score: <b id="level-score">0</b></p>
+      <p class="best-line" id="level-best"></p>
+      <button id="next-btn" class="big-btn">NEXT LEVEL ▶</button>
+      <button id="home-btn" class="small-btn">🏠 Home</button>
+    </section>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

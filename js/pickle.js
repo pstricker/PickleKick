@@ -1,6 +1,7 @@
 // The pickle goalie: how it looks, how it moves, and how it decides where to dive.
 import * as THREE from 'three';
 import { GOAL } from './physics.js';
+import { memeGeometry, memeMaterial } from './memeskin.js';
 
 const BODY_R = 0.4;
 const BODY_LEN = 1.0;
@@ -47,74 +48,30 @@ function pickleTexture() {
 }
 
 /**
- * Build a pickle character out of simple shapes. `full` adds arms, gloves,
- * legs, boots and a sweatband (the goalie); without it you get a plain gherkin.
+ * Build a pickle character out of simple shapes.
+ *   full: add arms, gloves, legs and boots (the goalie); without it you get a plain gherkin.
+ *   meme: wear the photo "meme pickle" skin instead of the cartoon face.
  */
-export function buildPickle({ r = BODY_R, len = BODY_LEN, full = true, seed = 7 } = {}) {
-  const k = r / BODY_R; // scale for all the little parts
+export function buildPickle({ r = BODY_R, len = BODY_LEN, full = true, seed = 7, meme = false } = {}) {
   const group = new THREE.Group();
-  const skin = new THREE.MeshPhongMaterial({ map: pickleTexture(), shininess: 70, specular: 0x446622 });
-  const dark = new THREE.MeshLambertMaterial({ color: 0x2f7a1c });
-  const ink = new THREE.MeshBasicMaterial({ color: 0x18280f });
-  const white = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 90 });
+  const dark = new THREE.MeshLambertMaterial({ color: meme ? 0x77722a : 0x2f7a1c });
+  const parts = { pupils: [], brows: [], mouth: null, oh: null, arms: [] };
 
-  group.add(new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 10, 28), skin));
-
-  // warty bumps, kept off the face
-  const rnd = seeded(seed);
-  const bumpGeo = new THREE.SphereGeometry(1, 8, 6);
-  for (let i = 0; i < 40; i++) {
-    const y = (rnd() * 2 - 1) * (len / 2 + r * 0.7);
-    const a = rnd() * Math.PI * 2;
-    const over = Math.abs(y) - len / 2;
-    const rr = over > 0 ? Math.sqrt(Math.max(0, r * r - over * over)) : r;
-    const front = Math.abs(a - Math.PI / 2) < 0.9;
-    if (front && y > -0.15 * k && y < 0.8 * k) continue;
-    const b = new THREE.Mesh(bumpGeo, dark);
-    b.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr);
-    b.scale.setScalar((0.03 + rnd() * 0.03) * k);
-    group.add(b);
+  if (meme) {
+    const body = new THREE.Mesh(memeGeometry(r, len), memeMaterial());
+    body.scale.set(0.9, 1, 0.9); // the meme pickle is a little slimmer than the cartoon one
+    group.add(body);
+  } else {
+    addCartoonBody(group, parts, r, len, seed, dark);
   }
-
-  // face
-  const eyeGeo = new THREE.SphereGeometry(0.125 * k, 16, 12);
-  const pupilGeo = new THREE.SphereGeometry(0.06 * k, 12, 10);
-  const pupils = [], brows = [];
-  for (const side of [-1, 1]) {
-    const eye = new THREE.Mesh(eyeGeo, white);
-    eye.position.set(side * 0.155 * k, 0.42 * k, 0.34 * k);
-    group.add(eye);
-    const pupil = new THREE.Mesh(pupilGeo, ink);
-    pupil.position.set(side * 0.155 * k, 0.42 * k, 0.445 * k);
-    pupil.userData.base = pupil.position.clone();
-    group.add(pupil);
-    pupils.push(pupil);
-    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.19 * k, 0.05 * k, 0.05 * k), ink);
-    brow.position.set(side * 0.16 * k, 0.6 * k, 0.37 * k);
-    brow.userData = { side, baseY: 0.6 * k };
-    group.add(brow);
-    brows.push(brow);
-    const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.06 * k, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff8fb0 }));
-    cheek.position.set(side * 0.27 * k, 0.25 * k, 0.3 * k);
-    cheek.scale.z = 0.4;
-    group.add(cheek);
-  }
-  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.13 * k, 0.03 * k, 8, 20, Math.PI), ink);
-  mouth.position.set(0, 0.2 * k, 0.385 * k);
-  group.add(mouth);
-  const oh = new THREE.Mesh(new THREE.SphereGeometry(0.08 * k, 12, 10), ink);
-  oh.position.set(0, 0.17 * k, 0.385 * k);
-  oh.scale.z = 0.4;
-  group.add(oh);
-
-  const parts = { pupils, brows, mouth, oh, arms: [] };
 
   if (full) {
-    const band = new THREE.Mesh(new THREE.TorusGeometry(0.335, 0.06, 10, 28), new THREE.MeshLambertMaterial({ color: 0xff3b3b }));
-    band.rotation.x = Math.PI / 2;
-    band.position.y = 0.73;
-    group.add(band);
-
+    if (!meme) {
+      const band = new THREE.Mesh(new THREE.TorusGeometry(0.335, 0.06, 10, 28), new THREE.MeshLambertMaterial({ color: 0xff3b3b }));
+      band.rotation.x = Math.PI / 2;
+      band.position.y = 0.73;
+      group.add(band);
+    }
     const gloveMat = new THREE.MeshPhongMaterial({ color: 0xff9f1c, shininess: 40 });
     const bootMat = new THREE.MeshPhongMaterial({ color: 0xff3b6b, shininess: 60 });
     for (const side of [-1, 1]) {
@@ -143,8 +100,67 @@ export function buildPickle({ r = BODY_R, len = BODY_LEN, full = true, seed = 7 
   return { group, parts };
 }
 
-/** Change a pickle's expression: 'ready' | 'oh' | 'happy' | 'sad'. */
+/** The green cartoon pickle: striped body, warty bumps and a face that can change. */
+function addCartoonBody(group, parts, r, len, seed, dark) {
+  const k = r / BODY_R; // scale for all the little parts
+  const skin = new THREE.MeshPhongMaterial({ map: pickleTexture(), shininess: 70, specular: 0x446622 });
+  const ink = new THREE.MeshBasicMaterial({ color: 0x18280f });
+  const white = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 90 });
+
+  group.add(new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 10, 28), skin));
+
+  // warty bumps, kept off the face
+  const rnd = seeded(seed);
+  const bumpGeo = new THREE.SphereGeometry(1, 8, 6);
+  for (let i = 0; i < 40; i++) {
+    const y = (rnd() * 2 - 1) * (len / 2 + r * 0.7);
+    const a = rnd() * Math.PI * 2;
+    const over = Math.abs(y) - len / 2;
+    const rr = over > 0 ? Math.sqrt(Math.max(0, r * r - over * over)) : r;
+    const front = Math.abs(a - Math.PI / 2) < 0.9;
+    if (front && y > -0.15 * k && y < 0.8 * k) continue;
+    const b = new THREE.Mesh(bumpGeo, dark);
+    b.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr);
+    b.scale.setScalar((0.03 + rnd() * 0.03) * k);
+    group.add(b);
+  }
+
+  const eyeGeo = new THREE.SphereGeometry(0.125 * k, 16, 12);
+  const pupilGeo = new THREE.SphereGeometry(0.06 * k, 12, 10);
+  for (const side of [-1, 1]) {
+    const eye = new THREE.Mesh(eyeGeo, white);
+    eye.position.set(side * 0.155 * k, 0.42 * k, 0.34 * k);
+    group.add(eye);
+    const pupil = new THREE.Mesh(pupilGeo, ink);
+    pupil.position.set(side * 0.155 * k, 0.42 * k, 0.445 * k);
+    pupil.userData.base = pupil.position.clone();
+    group.add(pupil);
+    parts.pupils.push(pupil);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.19 * k, 0.05 * k, 0.05 * k), ink);
+    brow.position.set(side * 0.16 * k, 0.6 * k, 0.37 * k);
+    brow.userData = { side, baseY: 0.6 * k };
+    group.add(brow);
+    parts.brows.push(brow);
+    const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.06 * k, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff8fb0 }));
+    cheek.position.set(side * 0.27 * k, 0.25 * k, 0.3 * k);
+    cheek.scale.z = 0.4;
+    group.add(cheek);
+  }
+  parts.mouth = new THREE.Mesh(new THREE.TorusGeometry(0.13 * k, 0.03 * k, 8, 20, Math.PI), ink);
+  parts.mouth.position.set(0, 0.2 * k, 0.385 * k);
+  group.add(parts.mouth);
+  parts.oh = new THREE.Mesh(new THREE.SphereGeometry(0.08 * k, 12, 10), ink);
+  parts.oh.position.set(0, 0.17 * k, 0.385 * k);
+  parts.oh.scale.z = 0.4;
+  group.add(parts.oh);
+}
+
+/**
+ * Change a pickle's expression: 'ready' | 'oh' | 'happy' | 'sad'.
+ * The meme pickle has a photo for a face, so it keeps the same grin whatever happens.
+ */
 export function setFace(parts, face) {
+  if (!parts.mouth) return;
   const smile = face === 'ready' || face === 'happy';
   parts.oh.visible = face === 'oh';
   parts.mouth.visible = face !== 'oh';
@@ -159,7 +175,7 @@ export function setFace(parts, face) {
 
 export class Pickle {
   constructor(scene) {
-    const built = buildPickle();
+    const built = buildPickle({ meme: true });
     this.body = built.group;      // spins around its own long axis
     this.parts = built.parts;
     this.root = new THREE.Group(); // moves and leans

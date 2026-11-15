@@ -37,4 +37,6 @@ node --test
 - `js/physics.js` – ball flight, spin and collisions (no browser code, unit tested)
 - `js/levels.js` – level difficulty and scoring
 - `js/pickle.js`, `js/wall.js`, `js/ball.js`, `js/scene.js` – the 3D characters and stadium
+- `js/memeskin.js`, `assets/pickle-meme.png` – the goalie's photo skin. Replace the image with another
+  pickle on a white background to change how the goalie looks.
 - `js/controls.js`, `js/hud.js`, `js/effects.js`, `js/audio.js` – input, HUD, confetti and sounds
